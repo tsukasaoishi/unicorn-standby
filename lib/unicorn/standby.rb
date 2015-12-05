@@ -1,90 +1,71 @@
 require "unicorn/standby/version"
+require 'unicorn/http_server'
 
 module Unicorn
-  class Standby
-    include Unicorn::SocketHelper
-
-    SCRIPT_ARGV = ARGV.map { |arg| arg.dup }
-
-    def initialize(app, options)
-      @app = app
-      @options = options
-      @config = Unicorn::Configurator.new(options.merge(use_defaults: true))
-      @logger = @config.set[:logger]
-      @listeners = []
+  module Standby
+    def start
+      super if @_not_standby
     end
 
-    def standby
-      ready_trap
-
-      $0 = "unicorn master (standby mode)" + SCRIPT_ARGV.join(" ")
-      wait_request
-
-      turn_on
-    end
-
-    def turn_on
-      set_unicorn_fds
-      Unicorn::HttpServer.new(@app, @options).start.join
-    end
-
-    def ready_trap
-      [:QUIT, :TERM, :INT].each do |signal|
-        Signal.trap(signal) { shutdown }
+    def join
+      if @_not_standby
+        super
+      else
+         standby
       end
     end
 
-    def shutdown
-      puts "master complete (standby)"
-      exit 0
+    private
+
+    def standby
+      proc_name 'master (standby)'
+      ready_standby_trap
+
+      standby_listeners = wait_request_listeners
+      logger.info "standby ready"
+
+      IO.select(standby_listeners)
+
+      turn_on(standby_listeners)
     end
 
-    def wait_request
-      listeners = @config[:listeners].dup
+    def ready_standby_trap
+      [:QUIT, :TERM, :INT].each do |signal|
+        Signal.trap(signal) { standby_shutdown }
+      end
+    end
+
+    def wait_request_listeners
+      listeners = config[:listeners].dup
       if listeners.empty?
         listeners << Unicorn::Const::DEFAULT_LISTEN
       end
 
-      @listeners = listeners.map {|addr| listen(addr) }
-
-      IO.select(@listeners)
+      listeners.map {|addr| listen(addr) }
     end
 
-    def set_unicorn_fds
+    def turn_on(standby_listeners)
+      set_unicorn_fds(standby_listeners)
+      @_not_standby = true
+      start.join
+    end
+
+    def standby_shutdown
+      logger.info "master complete (standby)"
+      exit 0
+    end
+
+    def set_unicorn_fds(standby_listeners)
       listener_fds = {}
-      @listeners.each do |sock|
+      standby_listeners.each do |sock|
         sock.close_on_exec = false if sock.respond_to?(:close_on_exec=)
         listener_fds[sock.fileno] = sock
       end
       ENV['UNICORN_FD'] = listener_fds.keys.join(',')
     end
-
-    def listen(address)
-      address = @config.expand_addr(address)
-
-      delay = 0.5
-      tries = 5
-
-      begin
-        io = bind_listen(address)
-        unless Kgio::TCPServer === io || Kgio::UNIXServer === io
-          prevent_autoclose(io)
-          io = server_cast(io)
-        end
-        @logger.info "listening on addr=#{sock_name(io)} fd=#{io.fileno}"
-        io
-      rescue Errno::EADDRINUSE => err
-        @logger.error "adding listener failed addr=#{address} (in use)"
-        raise err if tries == 0
-        tries -= 1
-        @logger.error "retrying in #{delay} seconds " \
-                     "(#{tries < 0 ? 'infinite' : tries} tries left)"
-        sleep(delay)
-        retry
-      rescue => err
-        @logger.fatal "error adding listener addr=#{address}"
-        raise err
-      end
-    end
   end
+end
+
+unless Unicorn::HttpServer.include?(Unicorn::Standby)
+  Unicorn::HttpServer.__send__(:prepend , Unicorn::Standby)
 end

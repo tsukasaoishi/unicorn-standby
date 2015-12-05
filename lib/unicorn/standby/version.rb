@@ -1,5 +1,5 @@
 module Unicorn
-  class Standby
+  module Standby
     VERSION = "0.1.0"
   end
 end
