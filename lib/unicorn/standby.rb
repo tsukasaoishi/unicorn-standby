@@ -4,18 +4,12 @@ require 'unicorn/http_server'
 module Unicorn
   module Standby
     def start
-      super if @_not_standby
+      @_wakeup ? super : self
     end
 
     def join
-      if @_not_standby
-        super
-      else
-         standby
-      end
+      @_wakeup ? super : standby
     end
-
-    private
 
     def standby
       proc_name 'master (standby)'
@@ -24,10 +18,22 @@ module Unicorn
       standby_listeners = wait_request_listeners
       logger.info "standby ready"
 
+      if @ready_pipe
+        begin
+          @ready_pipe.syswrite($$.to_s)
+        rescue => e
+          logger.warn("grandparent died too soon?: #{e.message} (#{e.class})")
+        end
+        @ready_pipe = @ready_pipe.close rescue nil
+      end
+
       IO.select(standby_listeners)
 
+      @_wakeup = true
       turn_on(standby_listeners)
     end
+
+    private
 
     def ready_standby_trap
       [:QUIT, :TERM, :INT].each do |signal|
@@ -36,17 +42,25 @@ module Unicorn
     end
 
     def wait_request_listeners
-      listeners = config[:listeners].dup
-      if listeners.empty?
-        listeners << Unicorn::Const::DEFAULT_LISTEN
+      listeners = ENV['UNICORN_FD'].to_s.split(/,/).map do |fd|
+        io = Socket.for_fd(fd.to_i)
+        prevent_autoclose(io)
+        logger.info "inherited addr=#{sock_name(io)} fd=#{fd}"
+        server_cast(io)
       end
 
-      listeners.map {|addr| listen(addr) }
+      names = listeners.map { |io| sock_name(io) }
+
+      new_listeners = config[:listeners].dup - names
+      if new_listeners.empty? && listeners.empty?
+        new_listeners << Unicorn::Const::DEFAULT_LISTEN
+      end
+
+      listeners + new_listeners.map {|addr| listen(addr) }
     end
 
     def turn_on(standby_listeners)
       set_unicorn_fds(standby_listeners)
-      @_not_standby = true
       start.join
     end
 
