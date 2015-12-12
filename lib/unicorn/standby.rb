@@ -1,5 +1,5 @@
 require "unicorn/standby/version"
-require 'unicorn/http_server'
+require 'unicorn'
 
 module Unicorn
   module Standby
@@ -54,7 +54,7 @@ module Unicorn
     end
 
     def ready_standby_trap
-      (self.class.const_get(:QUEUE_SIGS) - EXIT_SIGS).each do |signal|
+      (unicorn_queue_sigs - EXIT_SIGS).each do |signal|
         Signal.trap(signal) {}
       end
 
@@ -83,6 +83,14 @@ module Unicorn
     def standby_shutdown
       unlink_pid_safe(pid) if pid
       exit 0
+    end
+
+    def unicorn_queue_sigs
+      if self.class.const_defined?(:QUEUE_SIGS)
+        self.class.const_get(:QUEUE_SIGS)
+      else
+        @queue_sigs || []
+      end
     end
   end
 end
