@@ -1,4 +1,20 @@
 language: ruby
 rvm:
-  - 2.2.3
+  - 2.0.0
+  - 2.1
+  - 2.2
+  - ruby-head
 before_install: gem install bundler -v 1.10.6
+gemfile:
+  - gemfiles/unicorn42.gemfile
+  - gemfiles/unicorn43.gemfile
+  - gemfiles/unicorn44.gemfile
+  - gemfiles/unicorn45.gemfile
+  - gemfiles/unicorn46.gemfile
+  - gemfiles/unicorn47.gemfile
+  - gemfiles/unicorn48.gemfile
+  - gemfiles/unicorn49.gemfile
+  - gemfiles/unicorn50.gemfile
+notifications:
+  emails:
+    - tsukasa.oishi@gmail.com

@@ -19,9 +19,11 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "unicorn", ">= 4.8.0", "< 5.1.0"
+  spec.add_dependency "unicorn", ">= 4.4.0", "< 5.1.0"
 
-  spec.add_development_dependency "bundler", "~> 1.10"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "bundler", ">= 1.3.0", "< 2.0"
+  spec.add_development_dependency "rake", ">= 0.8.7"
   spec.add_development_dependency "minitest"
+  spec.add_development_dependency "minitest-reporters"
+  spec.add_development_dependency 'appraisal'
 end
