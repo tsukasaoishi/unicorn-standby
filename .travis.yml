@@ -6,8 +6,6 @@ rvm:
   - ruby-head
 before_install: gem install bundler -v 1.10.6
 gemfile:
-  - gemfiles/unicorn42.gemfile
-  - gemfiles/unicorn43.gemfile
   - gemfiles/unicorn44.gemfile
   - gemfiles/unicorn45.gemfile
   - gemfiles/unicorn46.gemfile
