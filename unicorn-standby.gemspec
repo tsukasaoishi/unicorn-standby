@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Tsukasa OISHI"]
   spec.email         = ["tsukasa.oishi@gmail.com"]
 
-  spec.summary       = %q{Unicorn Standby to standby to reach the request}
-  spec.description   = %q{Unicorn Standby to standby to reach the request}
+  spec.summary       = %q{Unicorn Standby is on standby until it accepts the request.}
+  spec.description   = %q{Unicorn Standby is on standby until it accepts the request.}
   spec.homepage      = "https://github.com/tsukasaoishi/unicorn-standby"
   spec.license       = "MIT"
 
