@@ -1,5 +1,7 @@
 # Unicorn::Standby
 
+[![Gem Version](https://badge.fury.io/rb/unicorn-standby.svg)](http://badge.fury.io/rb/unicorn-standby) [![Build Status](https://travis-ci.org/tsukasaoishi/unicorn-standby.svg?branch=master)](https://travis-ci.org/tsukasaoishi/unicorn-standby) [![Code Climate](https://codeclimate.com/github/tsukasaoishi/unicorn-standby/badges/gpa.svg)](https://codeclimate.com/github/tsukasaoishi/unicorn-standby)
+
 Unicorn standby is on standby until it accepts the request.
 If you use many rack applications (such as microservices) in development environments, Unicorn Standby saves memory consumption of your computer.
 
