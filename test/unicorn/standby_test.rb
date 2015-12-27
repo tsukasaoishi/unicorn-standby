@@ -31,7 +31,7 @@ class Unicorn::StandbyTest < Minitest::Test
   end
 
   def assert_standby
-    ps_list = `ps aux | grep unicorn-standby | grep -v grep | grep -v appraisal`.split("\n")
+    ps_list = `ps aux | grep "unicorn-standby master (standby)" | grep -v grep`.split("\n")
     assert_equal 1, ps_list.size
 
     ps = ps_list.first
@@ -46,7 +46,7 @@ class Unicorn::StandbyTest < Minitest::Test
     res = open("http://#{@addr}:#{@port}").read
     assert_equal "Hello", res
 
-    ps_list = `ps aux | grep unicorn-standby | grep -v grep | grep -v appraisal`.split("\n")
+    ps_list = `ps aux | grep unicorn-standby | grep unicorn_config.rb | grep -v grep`.split("\n")
     assert_equal 2, ps_list.size
 
     ps_list.each do |ps|
