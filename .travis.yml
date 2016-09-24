@@ -5,8 +5,6 @@ before_script:
   - bundle update
 cache: bundler
 rvm:
-  - 2.0.0
-  - 2.1.10
   - 2.2.5
   - 2.3.1
   - 2.4.0-preview2
