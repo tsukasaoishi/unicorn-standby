@@ -35,7 +35,7 @@ class Unicorn::StandbyTest < Minitest::Test
     assert_equal 1, ps_list.size
 
     ps = ps_list.first
-    assert_match /#{Regexp.escape("unicorn-standby master (standby) -c unicorn_config.rb -D")}/, ps
+    assert_match(/#{Regexp.escape("unicorn-standby master (standby) -c unicorn_config.rb -D")}/, ps)
   end
 
   test "standby starts" do
@@ -50,13 +50,13 @@ class Unicorn::StandbyTest < Minitest::Test
     assert_equal 2, ps_list.size
 
     ps_list.each do |ps|
-      assert_match /#{Regexp.escape("unicorn-standby ")}(worker\[0\]|master)#{Regexp.escape(" -c unicorn_config.rb -D")}/, ps
+      assert_match(/#{Regexp.escape("unicorn-standby ")}(worker\[0\]|master)#{Regexp.escape(" -c unicorn_config.rb -D")}/, ps)
     end
   end
 
   test "reload unicorn" do
     res = open("http://#{@addr}:#{@port}").read
-    assert_equal "Hello", res
+    assert_equal("Hello", res)
 
     Process.kill(:USR2, File.read("unicorn.pid").to_i)
     sleep 2
