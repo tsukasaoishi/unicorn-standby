@@ -16,5 +16,4 @@ gemfile:
   - gemfiles/unicorn48.gemfile
   - gemfiles/unicorn49.gemfile
   - gemfiles/unicorn50.gemfile
-  - gemfiles/unicorn51.gemfile
 bundler_args: --jobs 3 --retry 3
